@@ -20,7 +20,6 @@ import org.eclipse.xtext.serializer.ISerializationContext;
 import org.eclipse.xtext.serializer.analysis.GrammarAlias.AbstractElementAlias;
 import org.eclipse.xtext.serializer.sequencer.RuleCallStack;
 import org.eclipse.xtext.util.formallang.Nfa;
-import org.eclipse.xtext.util.formallang.NfaUtil;
 import org.eclipse.xtext.util.formallang.Pda;
 
 import com.google.common.base.Function;
@@ -96,42 +95,6 @@ public interface ISyntacticSequencerPDAProvider {
 		List<AbstractElementAlias> getAmbiguousSyntaxes();
 
 		ISynAbsorberState getSource();
-	}
-
-	public class SynAbsorberNfaAdapter implements Nfa<ISynAbsorberState> {
-
-		protected ISynAbsorberState start;
-		protected ISynAbsorberState stop;
-
-		public SynAbsorberNfaAdapter(ISynAbsorberState start) {
-			super();
-			this.start = start;
-			this.stop = new NfaUtil().find(this, new Predicate<ISynAbsorberState>() {
-				@Override
-				public boolean apply(ISynAbsorberState input) {
-					return input.getType().isStop();
-				}
-			});
-			if (this.stop == null) {
-				throw new IllegalStateException("Cannot find stop state");
-			}
-		}
-
-		@Override
-		public Iterable<ISynAbsorberState> getFollowers(ISynAbsorberState node) {
-			return node.getOutAbsorbers();
-		}
-
-		@Override
-		public ISynAbsorberState getStart() {
-			return start;
-		}
-
-		@Override
-		public ISynAbsorberState getStop() {
-			return stop;
-		}
-
 	}
 
 	public class SynPredicates {

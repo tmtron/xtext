@@ -192,8 +192,7 @@ public class NfaUtil {
 			collect(nfa, s, visited);
 	}
 
-	protected <S> void collectDistancesForm(Nfa<S> nfa, S from, int distance, Map<S, Integer> distances,
-			Predicate<S> matches) {
+	protected <S> void collectDistancesForm(Nfa<S> nfa, S from, int distance, Map<S, Integer> distances, Predicate<S> matches) {
 		Integer dist = distances.get(from);
 		if (dist != null && dist <= distance)
 			return;
@@ -229,8 +228,8 @@ public class NfaUtil {
 			collectFollowers(nfa, follower, result, visited, filter);
 	}
 
-	protected <SRCSTATE, DSTSTATE, P extends Nfa<DSTSTATE>> DSTSTATE create(Nfa<SRCSTATE> source, P result,
-			SRCSTATE src, NfaFactory<P, DSTSTATE, SRCSTATE> factory, Map<SRCSTATE, DSTSTATE> src2dst) {
+	protected <SRCSTATE, DSTSTATE, P extends Nfa<DSTSTATE>> DSTSTATE create(Nfa<SRCSTATE> source, P result, SRCSTATE src,
+			NfaFactory<P, DSTSTATE, SRCSTATE> factory, Map<SRCSTATE, DSTSTATE> src2dst) {
 		DSTSTATE dst = src2dst.get(src);
 		if (dst != null)
 			return dst;
@@ -243,8 +242,7 @@ public class NfaUtil {
 		return dst;
 	}
 
-	public <SRCSTATE, DSTSTATE, P extends Nfa<DSTSTATE>> P create(Nfa<SRCSTATE> source,
-			NfaFactory<P, DSTSTATE, SRCSTATE> factory) {
+	public <SRCSTATE, DSTSTATE, P extends Nfa<DSTSTATE>> P create(Nfa<SRCSTATE> source, NfaFactory<P, DSTSTATE, SRCSTATE> factory) {
 		Map<SRCSTATE, DSTSTATE> src2dst = Maps.newLinkedHashMap();
 		P result = factory.create(source.getStart(), source.getStop());
 		src2dst.put(source.getStop(), result.getStop());
@@ -260,13 +258,12 @@ public class NfaUtil {
 		return create(production, ff, Functions.<E> identity(), new NFAFactory<E>(), start, stop);
 	}
 
-	public <S, E, T, P extends Nfa<S>> P create(Production<E, T> production, FollowerFunction<E> ff,
-			NfaFactory<P, S, ? super T> factory) {
+	public <S, E, T, P extends Nfa<S>> P create(Production<E, T> production, FollowerFunction<E> ff, NfaFactory<P, S, ? super T> factory) {
 		return create(production, ff, new GetToken<E, T>(production), factory, null, null);
 	}
 
-	public <S, E, T1, T2, P extends Nfa<S>> P create(Production<E, T1> production, FollowerFunction<E> ff,
-			Function<E, T2> tokenFunc, NfaFactory<P, S, ? super T2> factory, T2 start, T2 stop) {
+	public <S, E, T1, T2, P extends Nfa<S>> P create(Production<E, T1> production, FollowerFunction<E> ff, Function<E, T2> tokenFunc,
+			NfaFactory<P, S, ? super T2> factory, T2 start, T2 stop) {
 		Map<E, S> states = Maps.newLinkedHashMap();
 		P nfa = factory.create(start, stop);
 		states.put(null, nfa.getStop());
@@ -274,17 +271,15 @@ public class NfaUtil {
 		return nfa;
 	}
 
-	protected <S, E, T1, T2, P extends Nfa<S>> void create(Production<E, T1> production, P nfa, S state,
-			Iterable<E> followerElements, FollowerFunction<E> followerFunc, Function<E, T2> tokenFunc,
-			NfaFactory<P, S, ? super T2> factory, Map<E, S> ele2state) {
+	protected <S, E, T1, T2, P extends Nfa<S>> void create(Production<E, T1> production, P nfa, S state, Iterable<E> followerElements,
+			FollowerFunction<E> followerFunc, Function<E, T2> tokenFunc, NfaFactory<P, S, ? super T2> factory, Map<E, S> ele2state) {
 		List<S> sfollower = Lists.newArrayList();
 		for (E follower : followerElements) {
 			S fs = ele2state.get(follower);
 			if (fs == null) {
 				fs = factory.createState(nfa, tokenFunc.apply(follower));
 				ele2state.put(follower, fs);
-				create(production, nfa, fs, followerFunc.getFollowers(follower), followerFunc, tokenFunc, factory,
-						ele2state);
+				create(production, nfa, fs, followerFunc.getFollowers(follower), followerFunc, tokenFunc, factory, ele2state);
 			}
 			sfollower.add(fs);
 		}
@@ -323,8 +318,8 @@ public class NfaUtil {
 	/**
 	 * returns the sum of all edge-hashes.
 	 * 
-	 * An edge-hash is computed as precedingStateKey.hashCode * (followingStateKey.hashCode + 1). Adding 1 ensures the
-	 * direction of edges is considered.
+	 * An edge-hash is computed as precedingStateKey.hashCode * (followingStateKey.hashCode + 1). Adding 1 ensures the direction of edges is
+	 * considered.
 	 * 
 	 * Disadvantage of this implementation: it calls keyFunc and key.hashCode twice on each state.
 	 */
@@ -358,8 +353,7 @@ public class NfaUtil {
 		return equalsIgnoreOrder(nfa1, nfa2, nfa1.getStart(), nfa2.getStart(), keyFunc, Sets.<S> newHashSet());
 	}
 
-	public <S> boolean equalsIgnoreOrder(Nfa<S> nfa1, Nfa<S> nfa2, S s1, S s2, Function<S, ? extends Object> keyFunc,
-			Set<S> visited) {
+	public <S> boolean equalsIgnoreOrder(Nfa<S> nfa1, Nfa<S> nfa2, S s1, S s2, Function<S, ? extends Object> keyFunc, Set<S> visited) {
 		if (!visited.add(s1))
 			return true;
 		Iterable<S> followers1 = nfa1.getFollowers(s1);
@@ -379,31 +373,83 @@ public class NfaUtil {
 		return true;
 	}
 
-	public <S> String identityString(Nfa<S> nfa, Function<S, String> idFunc) {
-		Map<String, S> names = Maps.newHashMap();
-		Map<S, Integer> ids = Maps.newHashMap();
-		for (S s : collect(nfa)) {
-			String name = idFunc.apply(s);
-			if (name == null) {
-				name = "(null)";
+	public <S> Map<S, String> uniqueNames(final Nfa<S> nfa, final Function<? super S, String> nameFunc) {
+		class Pair implements Comparable<Pair> {
+			String name;
+			S state;
+
+			public Pair(S state, String name) {
+				super();
+				this.name = name;
+				this.state = state;
 			}
-			if (s == nfa.getStart())
-				name = "start:" + name;
-			else if (s == nfa.getStop())
-				name = "stop:" + name;
-			names.put(name, s);
+
+			@Override
+			public int compareTo(Pair o) {
+				return name.compareTo(o.name);
+			}
 		}
-		List<String> sorted = Lists.newArrayList(names.keySet());
-		Collections.sort(sorted);
-		for (int i = 0; i < sorted.size(); i++)
-			ids.put(names.get(sorted.get(i)), i);
-		List<String> result = Lists.newArrayListWithExpectedSize(sorted.size());
-		for (String name : sorted) {
-			S state = names.get(name);
+
+		class Rec {
+			void collect(S state, Set<S> visiting, Map<String, List<S>> result) {
+				List<Pair> current = Lists.newArrayList();
+				Iterable<S> followers = nfa.getFollowers(state);
+				for (S f : followers) {
+					if (!visiting.contains(f)) {
+						String name = nameFunc.apply(f);
+						current.add(new Pair(f, name == null ? "(null)" : name));
+					}
+				}
+				Collections.sort(current);
+				Iterables.addAll(visiting, followers);
+				for (Pair p : current) {
+					List<S> list = result.get(p.name);
+					if (list == null) {
+						result.put(p.name, list = Lists.newArrayList());
+					}
+					list.add(p.state);
+					collect(p.state, visiting, result);
+				}
+			}
+		}
+
+		Map<String, List<S>> mm = Maps.newLinkedHashMap();
+		S start = nfa.getStart();
+		String startname = nameFunc.apply(start);
+		mm.put(startname == null ? "(null)" : startname, Lists.newArrayList(Collections.singleton(start)));
+		new Rec().collect(start, Sets.<S> newHashSet(), mm);
+		Map<S, String> result = Maps.newLinkedHashMap();
+		for (Map.Entry<String, List<S>> e : mm.entrySet()) {
+			List<S> collisions = e.getValue();
+			String name = e.getKey();
+			if (collisions.size() > 1) {
+				int i = 1;
+				for (S s : collisions) {
+					result.put(s, (i++) + ":" + name);
+				}
+			} else {
+				result.put(collisions.iterator().next(), name);
+			}
+		}
+		return result;
+	}
+
+	public <S> String identityString(Nfa<S> nfa, Function<S, String> idFunc) {
+		Map<S, String> names = uniqueNames(nfa, idFunc);
+		Map<S, Integer> ids = Maps.newHashMap();
+		int i = 0;
+		for (S s : names.keySet()) {
+			ids.put(s, i++);
+		}
+		List<String> result = Lists.newArrayListWithExpectedSize(names.size());
+		for (Map.Entry<S, String> e : names.entrySet()) {
+			S state = e.getKey();
+			String name = e.getValue();
 			Integer id = ids.get(state);
 			List<Integer> followers = Lists.newArrayList();
-			for (S f : nfa.getFollowers(state))
+			for (S f : nfa.getFollowers(state)) {
 				followers.add(ids.get(f));
+			}
 			Collections.sort(followers);
 			result.add(id + ":" + name + "->" + Joiner.on(",").join(followers));
 		}
@@ -506,8 +552,7 @@ public class NfaUtil {
 	//		return result;
 	//	}
 
-	protected <S, ITERABLE extends Iterable<? extends S>> S find(Nfa<S> nfa, S state, Predicate<S> matcher,
-			Set<S> visited) {
+	protected <S, ITERABLE extends Iterable<? extends S>> S find(Nfa<S> nfa, S state, Predicate<S> matcher, Set<S> visited) {
 		if (!visited.add(state))
 			return null;
 		if (matcher.apply(state))

@@ -10,6 +10,7 @@ package org.eclipse.xtext.serializer.analysis;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,16 +27,19 @@ import org.eclipse.xtext.Assignment;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.GrammarUtil;
+import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.grammaranalysis.impl.GrammarElementTitleSwitch;
 import org.eclipse.xtext.serializer.ISerializationContext;
-import org.eclipse.xtext.serializer.analysis.ISyntacticSequencerPDAProvider.ISynAbsorberState;
-import org.eclipse.xtext.serializer.analysis.ISyntacticSequencerPDAProvider.SynAbsorberNfaAdapter;
+import org.eclipse.xtext.serializer.analysis.ISerState.SerStateType;
 import org.eclipse.xtext.serializer.impl.FeatureFinderUtil;
 import org.eclipse.xtext.util.formallang.Nfa;
 import org.eclipse.xtext.util.formallang.NfaFactory;
 import org.eclipse.xtext.util.formallang.NfaGraphFormatter;
 import org.eclipse.xtext.util.formallang.NfaUtil;
+import org.eclipse.xtext.util.formallang.Pda;
+import org.eclipse.xtext.util.formallang.PdaToNfa;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -49,6 +53,41 @@ import com.google.inject.Singleton;
  */
 @Singleton
 public class SemanticSequencerNfaProvider implements ISemanticSequencerNfaProvider {
+
+	protected final class IsAbsorber implements Predicate<ISerState> {
+		@Override
+		public boolean apply(ISerState input) {
+			if (input.getType() == SerStateType.STOP)
+				return true;
+			AbstractElement ele = input.getGrammarElement();
+			if (ele == null)
+				return true;
+			if (GrammarUtil.isAssigned(ele))
+				return true;
+			if (GrammarUtil.isAssignedAction(ele))
+				return true;
+			return false;
+		}
+	}
+
+	protected class SemanticPdaToNfa extends PdaToNfa<ISerState, RuleCall, ISemState> {
+
+		private Comparator<State> comparator;
+
+		@Override
+		protected <P extends Nfa<ISemState>> P clone(NfaFactory<P, ISemState, ? super ISerState> factory, NfaImpl nfa) {
+			Map<State, Integer> distanceToFinalStateMap = util.distanceToFinalStateMap(nfa);
+			this.comparator = new NfaUtil.MappedComparator<State, Integer>(distanceToFinalStateMap);
+			return super.clone(factory, nfa);
+		}
+
+		@Override
+		protected Iterable<State> getFollowers(State state) {
+			List<State> list = Lists.newArrayList(state.getFollowers());
+			Collections.sort(list, comparator);
+			return list;
+		}
+	}
 
 	protected static class SemNfa implements Nfa<ISemState> {
 
@@ -176,18 +215,25 @@ public class SemanticSequencerNfaProvider implements ISemanticSequencerNfaProvid
 		}
 	}
 
-	protected static class SemStateFactory implements NfaFactory<SemNfa, ISemState, ISynAbsorberState> {
+	protected static class SemStateFactory implements NfaFactory<SemNfa, ISemState, ISerState> {
+
+		private final EClass type;
+
+		public SemStateFactory(EClass type) {
+			super();
+			this.type = type;
+		}
 
 		@Override
-		public SemNfa create(ISynAbsorberState start, ISynAbsorberState stop) {
-			SemState starts = new SemState(stop.getEClass(), stop.getGrammarElement());
-			SemState stops = new SemState(start.getEClass(), start.getGrammarElement());
+		public SemNfa create(ISerState start, ISerState stop) {
+			SemState starts = new SemState(type, stop.getGrammarElement());
+			SemState stops = new SemState(type, start.getGrammarElement());
 			return new SemNfa(starts, stops);
 		}
 
 		@Override
-		public ISemState createState(SemNfa nfa, ISynAbsorberState token) {
-			return new SemState(token.getEClass(), token.getGrammarElement());
+		public ISemState createState(SemNfa nfa, ISerState token) {
+			return new SemState(type, token.getGrammarElement());
 		}
 
 		@Override
@@ -202,7 +248,7 @@ public class SemanticSequencerNfaProvider implements ISemanticSequencerNfaProvid
 	protected Map<Grammar, Map<ISerializationContext, Nfa<ISemState>>> cache = Maps.newHashMap();
 
 	@Inject
-	protected ISyntacticSequencerPDAProvider pdaProvider;
+	protected IContextTypePDAProvider pdaProvider;
 
 	@Inject
 	private NfaUtil util;
@@ -217,19 +263,18 @@ public class SemanticSequencerNfaProvider implements ISemanticSequencerNfaProvid
 		return true;
 	}
 
-	protected SemNfa createNfa(Grammar grammar, ISynAbsorberState synState, ISerializationContext context) {
+	protected SemNfa createNfa(Grammar grammar, Pda<ISerState, RuleCall> pda, ISerializationContext context) {
 		EClass type = context.getType();
-		SynAbsorberNfaAdapter synNfa = new SynAbsorberNfaAdapter(synState);
-		//		System.out.println(new NfaFormatter().format(synNfa));
-		Map<ISynAbsorberState, Integer> distanceMap = util.distanceToFinalStateMap(synNfa);
-		SemNfa nfa = util.create(util.sort(synNfa, distanceMap), new SemStateFactory());
-		//		util.sortInplace(nfa, distanceMap);
+		SemNfa nfa = createPdaToNfaUtil().pdaToNfa(pda, new IsAbsorber(), new SemStateFactory(type));
 		if (type != null)
 			initContentValidationNeeded(type, nfa);
 		initRemainingFeatures(nfa.getStop(), util.inverse(nfa), Sets.<ISemState> newHashSet());
 		initOrderIDs(grammar, nfa);
-		//		System.out.println(new NfaFormatter().format(nfa));
 		return nfa;
+	}
+
+	protected SemanticPdaToNfa createPdaToNfaUtil() {
+		return new SemanticPdaToNfa();
 	}
 
 	@Override
@@ -239,12 +284,12 @@ public class SemanticSequencerNfaProvider implements ISemanticSequencerNfaProvid
 			return result;
 		result = Maps.newLinkedHashMap();
 		cache.put(grammar, result);
-		Map<ISerializationContext, ISynAbsorberState> PDAs = pdaProvider.getSyntacticSequencerPDAs(grammar);
-		for (Entry<ISerializationContext, ISynAbsorberState> e : PDAs.entrySet()) {
-			ISynAbsorberState synState = e.getValue();
+		Map<ISerializationContext, Pda<ISerState, RuleCall>> PDAs = pdaProvider.getContextTypePDAs(grammar);
+		for (Entry<ISerializationContext, Pda<ISerState, RuleCall>> e : PDAs.entrySet()) {
+			Pda<ISerState, RuleCall> pda = e.getValue();
 			ISerializationContext context = e.getKey();
 			try {
-				SemNfa nfa = createNfa(grammar, synState, context);
+				SemNfa nfa = createNfa(grammar, pda, context);
 				result.put(context, nfa);
 			} catch (Exception x) {
 				LOG.error("Error during static analysis of context '" + context + "': " + x.getMessage(), x);
