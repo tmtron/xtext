@@ -20,6 +20,7 @@ import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.TerminalRule;
 import org.eclipse.xtext.common.types.JvmAnnotationTarget;
 import org.eclipse.xtext.common.types.JvmAnnotationType;
+import org.eclipse.xtext.common.types.JvmDeclaredType;
 import org.eclipse.xtext.common.types.JvmEnumerationType;
 import org.eclipse.xtext.common.types.JvmField;
 import org.eclipse.xtext.common.types.JvmFormalParameter;
@@ -28,10 +29,7 @@ import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.JvmOperation;
 import org.eclipse.xtext.common.types.JvmParameterizedTypeReference;
 import org.eclipse.xtext.common.types.JvmType;
-import org.eclipse.xtext.common.types.JvmTypeConstraint;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
-import org.eclipse.xtext.common.types.JvmTypeReference;
-import org.eclipse.xtext.common.types.JvmWildcardTypeReference;
 import org.eclipse.xtext.common.types.TypesPackage;
 import org.eclipse.xtext.common.types.util.AnnotationLookup;
 import org.eclipse.xtext.common.types.util.DeprecationUtil;
@@ -48,19 +46,16 @@ import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.xbase.XAbstractFeatureCall;
-import org.eclipse.xtext.xbase.XBinaryOperation;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.XNumberLiteral;
-import org.eclipse.xtext.xbase.XPostfixOperation;
-import org.eclipse.xtext.xbase.XUnaryOperation;
 import org.eclipse.xtext.xbase.XVariableDeclaration;
 import org.eclipse.xtext.xbase.XbasePackage;
 import org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotation;
 import org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotationsPackage;
 import org.eclipse.xtext.xbase.lib.Extension;
 import org.eclipse.xtext.xbase.services.XbaseGrammarAccess;
+import org.eclipse.xtext.xtype.XImportDeclaration;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
@@ -134,6 +129,8 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 			}
 			operationCanceledManager.checkCanceled(cancelIndicator);
 			computeFeatureCallHighlighting((XAbstractFeatureCall) object, acceptor);
+		} else if (object instanceof XVariableDeclaration) {
+			highlightVariableDeclaration((XVariableDeclaration) object, acceptor);
 		} else if (object instanceof XNumberLiteral) {
 			highlightNumberLiterals((XNumberLiteral) object, acceptor);
 		} else if (object instanceof XAnnotation) {
@@ -175,13 +172,8 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 		final Object referencersContainingFeature = referencer.eContainingFeature();
 		
 		if (resolvedReferencedObject instanceof JvmTypeParameter) {
-			if (reference.isContainment()) {
-				// type parameter declarations ...
-				highlightFeature(acceptor, resolvedReferencedObject, TypesPackage.Literals.JVM_TYPE_PARAMETER__NAME, TYPE_VARIABLE);
-			} else {
-				// as well as references of them shall be highlighted differently compared to other type arguments (my decision)
-				highlightFeature(acceptor, referencer, reference, TYPE_VARIABLE);
-			}
+			// may happen in cast expressions
+			highlightFeature(acceptor, referencer, reference, TYPE_VARIABLE);
 			
 		} else if (referencer instanceof JvmParameterizedTypeReference
 					&& (referencersContainingFeature == TypesPackage.Literals.JVM_PARAMETERIZED_TYPE_REFERENCE__ARGUMENTS
@@ -195,21 +187,28 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 			
 			highlightFeature(acceptor, referencer, TypesPackage.Literals.JVM_PARAMETERIZED_TYPE_REFERENCE__TYPE, TYPE_ARGUMENT);
 			
-		} else if (resolvedReferencedObject instanceof JvmEnumerationType) {
-			highlightFeature(acceptor, referencer, reference, ENUM);
-			
-		} else if (resolvedReferencedObject instanceof JvmGenericType) {
-			final JvmGenericType type = (JvmGenericType) resolvedReferencedObject;
-			if (type.isInterface()) {
-				highlightFeature(acceptor, referencer, reference, INTERFACE);
-			} else if (type.isAbstract()) {
-				highlightFeature(acceptor, referencer, reference, ABSTRACT_CLASS);
-			} else {
-				highlightFeature(acceptor, referencer, reference, CLASS);
+		} else if (resolvedReferencedObject instanceof JvmDeclaredType) {
+			if (referencer instanceof XImportDeclaration) {
+				// don't highlight import statements
+				return;
+				
+			} else if (resolvedReferencedObject instanceof JvmEnumerationType) {
+				highlightFeature(acceptor, referencer, reference, ENUM);
+				
+			} else if (resolvedReferencedObject instanceof JvmGenericType) {
+				
+				final JvmGenericType type = (JvmGenericType) resolvedReferencedObject;
+				if (type.isInterface()) {
+					highlightFeature(acceptor, referencer, reference, INTERFACE);
+				} else if (type.isAbstract()) {
+					highlightFeature(acceptor, referencer, reference, ABSTRACT_CLASS);
+				} else {
+					highlightFeature(acceptor, referencer, reference, CLASS);
+				}
+				
+			} else if (resolvedReferencedObject instanceof JvmAnnotationType) {
+				highlightFeature(acceptor, referencer, reference, highlightingConfiguration);
 			}
-			
-		} else if (resolvedReferencedObject instanceof JvmAnnotationType) {
-			highlightFeature(acceptor, referencer, reference, highlightingConfiguration);
 		}
 	}
 
@@ -226,12 +225,20 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 	protected void computeFeatureCallHighlighting(XAbstractFeatureCall featureCall, IHighlightedPositionAcceptor acceptor) {
 		JvmIdentifiableElement feature = featureCall.getFeature();
 		if (feature != null && !feature.eIsProxy()) {
+			
 			if (feature instanceof XVariableDeclaration) {
-				highlightFeatureCall(featureCall, acceptor, LOCAL_VARIABLE);
+				if (((XVariableDeclaration) feature).isWriteable()) {
+					highlightFeatureCall(featureCall, acceptor, LOCAL_VARIABLE);
+				} else {
+					highlightFeatureCall(featureCall, acceptor, LOCAL_FINAL_VARIABLE);
+				}
+				
 			} else if (feature instanceof JvmFormalParameter) {
 				highlightFeatureCall(featureCall, acceptor, PARAMETER_VARIABLE);
+				
 			} else if (feature instanceof JvmTypeParameter) {
 				highlightFeatureCall(featureCall, acceptor, TYPE_VARIABLE);
+				
 			} else if (feature instanceof JvmField) {
 				if (((JvmField) feature).isStatic()) {
 					if (((JvmField) feature).isFinal()) {
@@ -242,34 +249,37 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 				} else {
 					highlightFeatureCall(featureCall, acceptor, FIELD);
 				}
+				
 			} else if (feature instanceof JvmOperation && !featureCall.isOperation()) {
 				JvmOperation jvmOperation = (JvmOperation) feature;
+				
 				if (jvmOperation.isStatic()) {
 					highlightFeatureCall(featureCall, acceptor, STATIC_METHOD_INVOCATION);
+					if (featureCall.isExtension() || isExtensionWithImplicitFirstArgument(featureCall)) {
+						highlightFeatureCall(featureCall, acceptor, EXTENSION_METHOD_INVOCATION);
+					}
+				} else if (featureCall.isExtension() || isExtensionWithImplicitFirstArgument(featureCall)) {
+					highlightFeatureCall(featureCall, acceptor, EXTENSION_METHOD_INVOCATION);
 				} else if (jvmOperation.isAbstract()) {
 					highlightFeatureCall(featureCall, acceptor, ABSTRACT_METHOD_INVOCATION);
 				} else {
 					highlightFeatureCall(featureCall, acceptor, METHOD);
 				}
+				
+			} else if (feature instanceof JvmDeclaredType) {
+				highlightReferenceJvmType(acceptor, featureCall, XbasePackage.Literals.XABSTRACT_FEATURE_CALL__FEATURE, feature);
 			}
-			if(!(featureCall instanceof XBinaryOperation || featureCall instanceof XUnaryOperation || featureCall instanceof XPostfixOperation)) {
-				if(featureCall.isExtension()){
-					highlightFeatureCall(featureCall, acceptor, 
-							EXTENSION_METHOD_INVOCATION);
-				} else {
-					// Extensions without implicit first argument
-					XExpression implicitReceiver = featureCall.getImplicitReceiver();
-					if(implicitReceiver != null && implicitReceiver instanceof XAbstractFeatureCall){
-							if(isExtension(((XAbstractFeatureCall) implicitReceiver).getFeature()))
-								highlightFeatureCall(featureCall, acceptor, 
-										EXTENSION_METHOD_INVOCATION);
-					}
-				}	
-			}
+			
 			if(feature instanceof JvmAnnotationTarget && DeprecationUtil.isDeprecated((JvmAnnotationTarget)feature)){
 				highlightFeatureCall(featureCall, acceptor, DEPRECATED_MEMBERS);
 			}
 		}
+	}
+	
+	protected boolean isExtensionWithImplicitFirstArgument(XAbstractFeatureCall featureCall) {
+		XExpression implicitReceiver = featureCall.getImplicitReceiver();
+		return implicitReceiver instanceof XAbstractFeatureCall
+				&& isExtension(((XAbstractFeatureCall) implicitReceiver).getFeature());
 	}
 	
 	protected boolean isExtension(JvmIdentifiableElement jvmIdentifiableElement){
@@ -306,46 +316,22 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 		}
 	}
 	
+	protected void highlightVariableDeclaration(XVariableDeclaration varDecl, IHighlightedPositionAcceptor acceptor) {
+		if (varDecl.isWriteable()) {
+			highlightFeature(acceptor, varDecl, XbasePackage.Literals.XVARIABLE_DECLARATION__NAME, LOCAL_VARIABLE);
+		} else {
+			highlightFeature(acceptor, varDecl, XbasePackage.Literals.XVARIABLE_DECLARATION__NAME, LOCAL_FINAL_VARIABLE);
+		}
+	}
+	
 	protected void highlightNumberLiterals(XNumberLiteral literal, IHighlightedPositionAcceptor acceptor) {
 		ICompositeNode node = NodeModelUtils.findActualNodeFor(literal);
 		ITextRegion textRegion = node.getTextRegion();
 		acceptor.addPosition(textRegion.getOffset(), textRegion.getLength(), NUMBER_ID);
 	}
 	
-	/**
-	 * Handles the coloring of type parameter declarations, like the declaration of 'T' in 'class Foo<T extends Object> {...}'.
-	 */
-	protected void highlightTypeParameters(Iterable<JvmTypeParameter> typeParameters, IHighlightedPositionAcceptor acceptor) {
-		for (JvmTypeParameter typeParameter : typeParameters) {
-			highlightTypeParameter(typeParameter, acceptor);
-		}
-	}
-	
 	protected void highlightTypeParameter(JvmTypeParameter typeParameter, IHighlightedPositionAcceptor acceptor) {
 		highlightFeature(acceptor, typeParameter, TypesPackage.Literals.JVM_TYPE_PARAMETER__NAME, TYPE_VARIABLE);
-		for (JvmTypeConstraint constraint : typeParameter.getConstraints()) {
-			if (constraint.getTypeReference() instanceof JvmParameterizedTypeReference) {				
-				highlightTypeArguments((JvmParameterizedTypeReference) constraint.getTypeReference(), acceptor);
-			}
-		}
-	}
-
-	/**
-	 * Handles the coloring of type arguments, like in 'class Foo<Object> {...}', ' Collections.<String>emptyList()', etc.
-	 */
-	protected void highlightTypeArguments(Iterable<JvmTypeReference> typeArguments, IHighlightedPositionAcceptor acceptor) {
-		for (JvmParameterizedTypeReference ref : Iterables.filter(typeArguments, JvmParameterizedTypeReference.class)) {
-			highlightTypeArguments(ref, acceptor);
-		}
-		for (JvmWildcardTypeReference ref : Iterables.filter(typeArguments, JvmWildcardTypeReference.class)) {
-			for (JvmTypeConstraint c : ref.getConstraints()) {
-				// according to the Xtype grammar c.getTypeReference() can be a JvmParameterizedTypeReference,
-				//  or an XFunctionTypeRef, so... 
-				if (c.getTypeReference() instanceof JvmParameterizedTypeReference) {
-					highlightTypeArguments((JvmParameterizedTypeReference) c.getTypeReference(), acceptor);				
-				}
-			}
-		}
 	}
 
 	protected void highlightTypeArguments(JvmParameterizedTypeReference typeRef, IHighlightedPositionAcceptor acceptor) {
@@ -354,7 +340,6 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 		} else {
 			highlightFeature(acceptor, typeRef, TypesPackage.Literals.JVM_PARAMETERIZED_TYPE_REFERENCE__TYPE, TYPE_ARGUMENT);
 		}
-		highlightTypeArguments(typeRef.getArguments(), acceptor);
 	}
 
 
