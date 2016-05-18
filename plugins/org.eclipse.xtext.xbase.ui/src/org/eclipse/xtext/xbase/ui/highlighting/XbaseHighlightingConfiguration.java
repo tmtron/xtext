@@ -44,11 +44,15 @@ public class XbaseHighlightingConfiguration extends DefaultHighlightingConfigura
 		acceptor.acceptDefaultHighlighting(XbaseHighlightingStyles.ABSTRACT_CLASS, "Abstract classes", abstractClasses());
 		
 		acceptor.acceptDefaultHighlighting(XbaseHighlightingStyles.STATIC_FINAL_FIELD, "Static final fields", staticFinalField());
-		acceptor.acceptDefaultHighlighting(XbaseHighlightingStyles.INHERITED_FIELD, "Inherited fields", inheritedField());
+		
+		// not supported yet
+		// acceptor.acceptDefaultHighlighting(XbaseHighlightingStyles.INHERITED_FIELD, "Inherited fields", inheritedField());
 		
 		acceptor.acceptDefaultHighlighting(XbaseHighlightingStyles.METHOD, "Methods", method());
 		acceptor.acceptDefaultHighlighting(XbaseHighlightingStyles.ABSTRACT_METHOD_INVOCATION, "Abstract method invocations", abstractMethodInvocation());
-		acceptor.acceptDefaultHighlighting(XbaseHighlightingStyles.INHERITED_METHOD_INVOCATION, "Inherited method invocations", inheritedMethodInvocation());
+		
+		// not supported yet
+		// acceptor.acceptDefaultHighlighting(XbaseHighlightingStyles.INHERITED_METHOD_INVOCATION, "Inherited method invocations", inheritedMethodInvocation());
 		
 		acceptor.acceptDefaultHighlighting(XbaseHighlightingStyles.LOCAL_VARIABLE, "Local variables", localVariable());
 		acceptor.acceptDefaultHighlighting(XbaseHighlightingStyles.LOCAL_VARIABLE_DECLARATION, "Local variable declarations", localVariableDecl());
@@ -66,13 +70,13 @@ public class XbaseHighlightingConfiguration extends DefaultHighlightingConfigura
 	
 
 	public TextStyle staticMethodInvocation(){
-		TextStyle textStyle = defaultTextStyle().copy();
+		TextStyle textStyle = method().copy();
 		textStyle.setStyle(SWT.ITALIC);
 		return textStyle;
 	}
 	
 	public TextStyle staticField(){
-		TextStyle textStyle = defaultTextStyle().copy();
+		TextStyle textStyle = field().copy();
 		textStyle.setStyle(SWT.ITALIC);
 		textStyle.setColor(new RGB(0, 0, 192));
 		return textStyle;
@@ -119,7 +123,7 @@ public class XbaseHighlightingConfiguration extends DefaultHighlightingConfigura
 	}
 	
 	public TextStyle staticFinalField(){
-		return staticMethodInvocation().copy();
+		return staticField().copy();
 	}
 	
 	public TextStyle inheritedField() {

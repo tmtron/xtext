@@ -31,8 +31,6 @@ public interface XbaseHighlightingStyles extends HighlightingStyles {
   
   public final static String STATIC_FINAL_FIELD = "xbase.static.final.field";
   
-  public final static String INHERITED_FIELD = "xbase.inherited.field";
-  
   public final static String METHOD = "xbase.method";
   
   public final static String STATIC_METHOD_INVOCATION = "xbase.static.method.invocation";
@@ -40,8 +38,6 @@ public interface XbaseHighlightingStyles extends HighlightingStyles {
   public final static String ABSTRACT_METHOD_INVOCATION = "xbase.abstract.method.invocation";
   
   public final static String EXTENSION_METHOD_INVOCATION = "xbase.extension.method.invacation";
-  
-  public final static String INHERITED_METHOD_INVOCATION = "xbase.inherited.method.invacation";
   
   public final static String DEPRECATED_MEMBERS = "xbase.deprecated.members";
   

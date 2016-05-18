@@ -25,13 +25,17 @@ interface XbaseHighlightingStyles extends HighlightingStyles {
 	String FIELD = "xbase.field";
 	String STATIC_FIELD = "xbase.static.field";
 	String STATIC_FINAL_FIELD = "xbase.static.final.field";
-	String INHERITED_FIELD = "xbase.inherited.field";
+	
+	// not supported yet
+	// String INHERITED_FIELD = "xbase.inherited.field";
 	
 	String METHOD = "xbase.method";
 	String STATIC_METHOD_INVOCATION = "xbase.static.method.invocation";      
 	String ABSTRACT_METHOD_INVOCATION = "xbase.abstract.method.invocation";
 	String EXTENSION_METHOD_INVOCATION = "xbase.extension.method.invacation";
-	String INHERITED_METHOD_INVOCATION = "xbase.inherited.method.invacation";
+	
+	// not supported yet
+	// String INHERITED_METHOD_INVOCATION = "xbase.inherited.method.invacation";
 	
 	String DEPRECATED_MEMBERS = "xbase.deprecated.members";
 	
