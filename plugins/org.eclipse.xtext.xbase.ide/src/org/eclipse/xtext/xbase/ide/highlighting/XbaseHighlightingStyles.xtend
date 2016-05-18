@@ -43,7 +43,7 @@ interface XbaseHighlightingStyles extends HighlightingStyles {
 	String PARAMETER_VARIABLE = "xbase.parameter.variable";
 	String TYPE_VARIABLE = "xbase.type.variable";
 	
-	String TYPE_ARGUMENT = "xbase.typeArgument";	
+	String TYPE_ARGUMENT = "xbase.type.argument";	
 	
 	String AUTOBOXING = "xbase.autoboxing";
 }
