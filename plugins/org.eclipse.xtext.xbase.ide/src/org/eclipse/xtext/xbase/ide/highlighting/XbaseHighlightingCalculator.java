@@ -53,9 +53,11 @@ import org.eclipse.xtext.xbase.XbasePackage;
 import org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotation;
 import org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotationsPackage;
 import org.eclipse.xtext.xbase.lib.Extension;
+import org.eclipse.xtext.xbase.scoping.batch.IFeatureNames;
 import org.eclipse.xtext.xbase.services.XbaseGrammarAccess;
 import org.eclipse.xtext.xtype.XImportDeclaration;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
@@ -129,6 +131,8 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 			}
 			operationCanceledManager.checkCanceled(cancelIndicator);
 			computeFeatureCallHighlighting((XAbstractFeatureCall) object, acceptor);
+		} else if (object instanceof JvmFormalParameter) {
+			highlightFormalParameter((JvmFormalParameter) object, acceptor);
 		} else if (object instanceof XVariableDeclaration) {
 			highlightVariableDeclaration((XVariableDeclaration) object, acceptor);
 		} else if (object instanceof XNumberLiteral) {
@@ -234,7 +238,10 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 				}
 				
 			} else if (feature instanceof JvmFormalParameter) {
-				highlightFeatureCall(featureCall, acceptor, PARAMETER_VARIABLE);
+				if (!SPECIAL_FEATURE_NAMES.contains(((JvmFormalParameter) feature).getName())) {
+					highlightFeatureCall(featureCall, acceptor, LOCAL_FINAL_VARIABLE);
+					// highlighting of special identifier is done separately, so it's omitted here 
+				}
 				
 			} else if (feature instanceof JvmTypeParameter) {
 				highlightFeatureCall(featureCall, acceptor, TYPE_VARIABLE);
@@ -316,6 +323,13 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 		}
 	}
 	
+	protected void highlightFormalParameter(JvmFormalParameter parameterDecl, IHighlightedPositionAcceptor acceptor) {
+		if (!SPECIAL_FEATURE_NAMES.contains(parameterDecl.getName())) {
+			highlightFeature(acceptor, parameterDecl, TypesPackage.Literals.JVM_FORMAL_PARAMETER__NAME, LOCAL_FINAL_VARIABLE_DECLARATION);
+			// highlighting of special identifier is done separately, so it's omitted here 
+		}
+	}
+	
 	protected void highlightVariableDeclaration(XVariableDeclaration varDecl, IHighlightedPositionAcceptor acceptor) {
 		if (varDecl.isWriteable()) {
 			highlightFeature(acceptor, varDecl, XbasePackage.Literals.XVARIABLE_DECLARATION__NAME, LOCAL_VARIABLE_DECLARATION);
@@ -372,6 +386,12 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 	}
 
 	/**
+	 * A list of special feature names. 'super' missing as it is a keyword in the Xbase grammar 
+	 */
+	protected static final List<String> SPECIAL_FEATURE_NAMES = Lists.newArrayList(
+			IFeatureNames.THIS.getFirstSegment(), IFeatureNames.IT.getFirstSegment(), IFeatureNames.SELF.getFirstSegment());
+	
+	/**
 	 * Returns a mapping from identifier (e.g. 'void', 'int', 'this') to highlighting ID. May not return
 	 * <code>null</code>.
 	 * 
@@ -382,9 +402,9 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 		for (Primitive p : Primitives.Primitive.values()) {
 			result.put(p.name().toLowerCase(), KEYWORD_ID);
 		}
-		result.put("this", KEYWORD_ID);
-		result.put("it", KEYWORD_ID);
-		result.put("self", KEYWORD_ID);
+		for (String name : SPECIAL_FEATURE_NAMES) {
+			result.put(name, KEYWORD_ID);
+		}
 		return result;
 	}
 }
