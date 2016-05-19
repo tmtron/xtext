@@ -184,7 +184,7 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 							|| referencersContainingFeature == TypesPackage.Literals.JVM_TYPE_CONSTRAINT__TYPE_REFERENCE
 							|| referencersContainingFeature == XbasePackage.Literals.XABSTRACT_FEATURE_CALL__TYPE_ARGUMENTS)) {
 			// case 1: 'referencer' is a type reference within the arguments reference of another (parameterized) type reference
-			//  'referencer' definitely a type argument and to be colored as such
+			//  'referencer' definitely is a type argument and to be colored as such
 			//  (if 'resolvedReferencedObject' is not a type parameter, which is tested above)
 			// case 2: type reference is nested in a JvmWildcardTypeReference -> JvmTypeConstraint
 			// case 3: the type reference is part of the type arguments of a method call
