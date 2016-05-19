@@ -318,9 +318,9 @@ public class XbaseHighlightingCalculator extends DefaultSemanticHighlightingCalc
 	
 	protected void highlightVariableDeclaration(XVariableDeclaration varDecl, IHighlightedPositionAcceptor acceptor) {
 		if (varDecl.isWriteable()) {
-			highlightFeature(acceptor, varDecl, XbasePackage.Literals.XVARIABLE_DECLARATION__NAME, LOCAL_VARIABLE);
+			highlightFeature(acceptor, varDecl, XbasePackage.Literals.XVARIABLE_DECLARATION__NAME, LOCAL_VARIABLE_DECLARATION);
 		} else {
-			highlightFeature(acceptor, varDecl, XbasePackage.Literals.XVARIABLE_DECLARATION__NAME, LOCAL_FINAL_VARIABLE);
+			highlightFeature(acceptor, varDecl, XbasePackage.Literals.XVARIABLE_DECLARATION__NAME, LOCAL_FINAL_VARIABLE_DECLARATION);
 		}
 	}
 	
