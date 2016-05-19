@@ -69,38 +69,38 @@ public class XbaseHighlightingConfiguration extends DefaultHighlightingConfigura
 	}
 	
 
-	public TextStyle staticMethodInvocation(){
+	public TextStyle staticMethodInvocation() {
 		TextStyle textStyle = method().copy();
 		textStyle.setStyle(SWT.ITALIC);
 		return textStyle;
 	}
 	
-	public TextStyle staticField(){
+	public TextStyle staticField() {
 		TextStyle textStyle = field().copy();
 		textStyle.setStyle(SWT.ITALIC);
 		textStyle.setColor(new RGB(0, 0, 192));
 		return textStyle;
 	}
 	
-	public TextStyle field(){
+	public TextStyle field() {
 		TextStyle textStyle = defaultTextStyle().copy();
 		textStyle.setColor(new RGB(0, 26, 171));
 		return textStyle;
 	}
 	
-	public TextStyle annotation(){
+	public TextStyle annotation() {
 		TextStyle textStyle = defaultTextStyle().copy();
 		textStyle.setColor(new RGB(100,100,100));
 		return textStyle;
 	}
 	
-	public TextStyle extensionMethodInvocation(){
+	public TextStyle extensionMethodInvocation() {
 		TextStyle textStyle = defaultTextStyle().copy();
 		textStyle.setColor(new RGB(171, 48, 0));
 		return textStyle;
 	}
 	
-	public TextStyle deprecatedMembers(){
+	public TextStyle deprecatedMembers() {
 		TextStyle textStyle = defaultTextStyle().copy();
 		textStyle.setStyle(TextAttribute.STRIKETHROUGH);
 		return textStyle;
@@ -122,7 +122,7 @@ public class XbaseHighlightingConfiguration extends DefaultHighlightingConfigura
 		return classes().copy();
 	}
 	
-	public TextStyle staticFinalField(){
+	public TextStyle staticFinalField() {
 		return staticField().copy();
 	}
 	
@@ -130,11 +130,11 @@ public class XbaseHighlightingConfiguration extends DefaultHighlightingConfigura
 		return field().copy();
 	}
 	
-	public TextStyle method(){
+	public TextStyle method() {
 		return defaultTextStyle().copy();
 	}
 	
-	public TextStyle abstractMethodInvocation(){
+	public TextStyle abstractMethodInvocation() {
 		return method().copy();
 	}
 	
@@ -142,11 +142,11 @@ public class XbaseHighlightingConfiguration extends DefaultHighlightingConfigura
 		return method().copy();
 	}
 	
-	public TextStyle localVariable(){
+	public TextStyle localVariable() {
 		return defaultTextStyle().copy();
 	}
 	
-	public TextStyle localVariableDecl(){
+	public TextStyle localVariableDecl() {
 		return localVariable().copy();
 	}
 	
@@ -158,19 +158,19 @@ public class XbaseHighlightingConfiguration extends DefaultHighlightingConfigura
 		return localVariableDecl().copy();
 	}
 	
-	public TextStyle parameterVariable(){
+	public TextStyle parameterVariable() {
 		return localVariable().copy();
 	}
 		
-	public TextStyle typeVariable(){
+	public TextStyle typeVariable() {
 		return typeArgument().copy();
 	}
 	
-	public TextStyle typeArgument(){
+	public TextStyle typeArgument() {
 		return defaultTextStyle().copy();
 	}
 	
-	public TextStyle autoboxing(){
+	public TextStyle autoboxing() {
 		return defaultTextStyle().copy();
 	}
 }
