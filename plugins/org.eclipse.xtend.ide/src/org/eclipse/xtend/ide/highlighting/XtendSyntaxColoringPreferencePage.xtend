@@ -23,14 +23,21 @@ class XtendSyntaxColoringPreferencePage extends SyntaxColoringPreferencePage {
 	 */
 	override acceptDefaultHighlighting(String id, String name, TextStyle style) {
 		switch (id) {
+			case XtendHighlightingStyles.INVALID_TOKEN_ID,
 			case XtendHighlightingStyles.SEMANTIC_LINE_BREAK,
 			case XtendHighlightingStyles.POTENTIAL_LINE_BREAK,
 			case HighlightingStyles.COMMENT_ID:
 				return
 			case HighlightingStyles.KEYWORD_ID:
 				super.acceptDefaultHighlighting(id, "Keywords", style)
+			case HighlightingStyles.NUMBER_ID:
+				super.acceptDefaultHighlighting(id, "Numbers", style)
 			case HighlightingStyles.STRING_ID:
 				super.acceptDefaultHighlighting(id, "Strings", style)
+			case HighlightingStyles.PUNCTUATION_ID:
+				super.acceptDefaultHighlighting(id, "Punctuation Characters", style)
+			case HighlightingStyles.TASK_ID:
+				super.acceptDefaultHighlighting(id, "Task Tags", style)
 			case HighlightingStyles.DEFAULT_ID:
 				super.acceptDefaultHighlighting(id, "Others", style)
 			case XbaseHighlightingStyles.LOCAL_VARIABLE,

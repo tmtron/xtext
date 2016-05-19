@@ -25,8 +25,13 @@ public class XtendSyntaxColoringPreferencePage extends SyntaxColoringPreferenceP
   @Override
   public void acceptDefaultHighlighting(final String id, final String name, final TextStyle style) {
     boolean _matched = false;
-    if (Objects.equal(id, XtendHighlightingStyles.SEMANTIC_LINE_BREAK)) {
+    if (Objects.equal(id, XtendHighlightingStyles.INVALID_TOKEN_ID)) {
       _matched=true;
+    }
+    if (!_matched) {
+      if (Objects.equal(id, XtendHighlightingStyles.SEMANTIC_LINE_BREAK)) {
+        _matched=true;
+      }
     }
     if (!_matched) {
       if (Objects.equal(id, XtendHighlightingStyles.POTENTIAL_LINE_BREAK)) {
@@ -48,9 +53,27 @@ public class XtendSyntaxColoringPreferencePage extends SyntaxColoringPreferenceP
       }
     }
     if (!_matched) {
+      if (Objects.equal(id, HighlightingStyles.NUMBER_ID)) {
+        _matched=true;
+        super.acceptDefaultHighlighting(id, "Numbers", style);
+      }
+    }
+    if (!_matched) {
       if (Objects.equal(id, HighlightingStyles.STRING_ID)) {
         _matched=true;
         super.acceptDefaultHighlighting(id, "Strings", style);
+      }
+    }
+    if (!_matched) {
+      if (Objects.equal(id, HighlightingStyles.PUNCTUATION_ID)) {
+        _matched=true;
+        super.acceptDefaultHighlighting(id, "Punctuation Characters", style);
+      }
+    }
+    if (!_matched) {
+      if (Objects.equal(id, HighlightingStyles.TASK_ID)) {
+        _matched=true;
+        super.acceptDefaultHighlighting(id, "Task Tags", style);
       }
     }
     if (!_matched) {
