@@ -80,4 +80,82 @@ class XtendHighlightingCalculatorExtendedColoringTest extends AbstractXtendTestC
 		
 		highlight()
 	}
+	
+	@Test
+	def void testLocalVariable() {
+		val model = "{ var int x = 1 println(x) }"
+		expectAbsolute(model.indexOf('x'), 1, LOCAL_VARIABLE_DECLARATION)
+		expectAbsolute(model.lastIndexOf('x'), 1, LOCAL_VARIABLE)
+		highlight(model)
+	}
+	
+	@Test
+	def void testLocalFinalVariable() {
+		val model = "{ val int x = 1 println(x) }"
+		expectAbsolute(model.indexOf('x'), 1, LOCAL_FINAL_VARIABLE_DECLARATION)
+		expectAbsolute(model.lastIndexOf('x'), 1, LOCAL_FINAL_VARIABLE)
+		highlight(model)
+	}
+	
+	@Test
+	def void testLocalVariableTE() {
+		val model = "''' «{var int x = 1 println(x)}» '''"
+		expectAbsolute(model.indexOf('x'), 1, LOCAL_VARIABLE_DECLARATION)
+		expectAbsolute(model.lastIndexOf('x'), 1, LOCAL_VARIABLE)
+		highlight(model)
+	}
+	
+	@Test
+	def void testLocalFinalVariableTE() {
+		val model = "''' «{val int x = 1 println(x)}» '''"
+		expectAbsolute(model.indexOf('x'), 1, LOCAL_FINAL_VARIABLE_DECLARATION)
+		expectAbsolute(model.lastIndexOf('x'), 1, LOCAL_FINAL_VARIABLE)
+		highlight(model)
+	}
+	
+	@Test
+	def void testImplicitClosureParameter() {
+		val model = "{ [ it ] }"
+		expectAbsolute(model.indexOf("it"), 2, KEYWORD_ID)
+		highlight(model)
+	}
+	
+	@Test
+	def void testClosureParameterIt() {
+		val model = "{ [ it | println(it) ] }"
+		expectAbsolute(model.indexOf("it"), 2, KEYWORD_ID)
+		expectAbsolute(model.indexOf("println"), 7, STATIC_METHOD_INVOCATION)
+		expectAbsolute(model.lastIndexOf("it"), 2, KEYWORD_ID)
+		highlight(model)
+	}
+	
+	@Test
+	def void testClosureParameter() {
+		val model = "{ [ int x | x ] }"
+		expectAbsolute(model.indexOf('int'), 3, KEYWORD_ID)
+		expectAbsolute(model.indexOf('x'), 1, LOCAL_FINAL_VARIABLE_DECLARATION)
+		expectAbsolute(model.lastIndexOf('x'), 1, LOCAL_FINAL_VARIABLE)
+		highlight(model)
+	}
+	
+	@Test
+	def void testLoopParameter() {
+		val model = "{ for(i: 0..42) { } }"
+		expectAbsolute(model.indexOf('i'), 1, LOCAL_FINAL_VARIABLE_DECLARATION)
+		highlight(model)
+	}
+	
+	@Test
+	def void testTELoopParameter() {
+		val model = "''' «FOR i: 0..42» «ENDFOR» '''"
+		expectAbsolute(model.indexOf('i'), 1, LOCAL_FINAL_VARIABLE_DECLARATION)
+		highlight(model)
+	}
+	
+	@Test
+	def void testSwitchParameter() {
+		val model = "{ switch( i: 0..47) { default: { } } }"
+		expectAbsolute(model.indexOf('i:'), 1, LOCAL_FINAL_VARIABLE_DECLARATION)
+		highlight(model)
+	}
 }
