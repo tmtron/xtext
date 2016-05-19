@@ -41,7 +41,7 @@ public interface XbaseHighlightingStyles extends HighlightingStyles {
   
   public final static String DEPRECATED_MEMBERS = "xbase.deprecated.members";
   
-  public final static String LOCAL_VARIABLE = "xbase.lokal.variable";
+  public final static String LOCAL_VARIABLE = "xbase.local.variable";
   
   public final static String LOCAL_VARIABLE_DECLARATION = "xbase.local.variable.declaration";
   

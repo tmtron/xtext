@@ -39,7 +39,7 @@ interface XbaseHighlightingStyles extends HighlightingStyles {
 	
 	String DEPRECATED_MEMBERS = "xbase.deprecated.members";
 	
-	String LOCAL_VARIABLE = "xbase.lokal.variable";
+	String LOCAL_VARIABLE = "xbase.local.variable";
 	String LOCAL_VARIABLE_DECLARATION = "xbase.local.variable.declaration";
 	String LOCAL_FINAL_VARIABLE = "xbase.local.final.variable"
 	String LOCAL_FINAL_VARIABLE_DECLARATION = "xbase.local.final.variable.declaration"
