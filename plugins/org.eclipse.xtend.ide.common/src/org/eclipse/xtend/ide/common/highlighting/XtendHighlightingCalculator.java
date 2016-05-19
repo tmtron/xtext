@@ -178,7 +178,6 @@ public class XtendHighlightingCalculator extends XbaseHighlightingCalculator imp
 		
 		XExpression initializer = field.getInitialValue();
 		highlightRichStrings(initializer, acceptor);
-		highlightAnnotations(acceptor, field);
 	}
 	
 	protected void highlightElement(XtendFunction function, IHighlightedPositionAcceptor acceptor, CancelIndicator cancelIndicator) {
@@ -189,7 +188,6 @@ public class XtendHighlightingCalculator extends XbaseHighlightingCalculator imp
 		if (createExtensionInfo != null) {
 			highlightRichStrings(createExtensionInfo.getCreateExpression(), acceptor);
 		}
-		highlightAnnotations(acceptor, function);
 	}
 	
 	protected void highlightAnnotations(IHighlightedPositionAcceptor acceptor, XtendAnnotationTarget target) {
