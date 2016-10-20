@@ -46,12 +46,12 @@
 <unit id="org.eclipse.xtext.m2e.source" version="0.0.0"/>
 <unit id="org.eclipse.xtext.idea.generator" version="0.0.0"/>
 <unit id="org.eclipse.xtext.idea.generator.source" version="0.0.0"/>
-<repository location="http://services.typefox.io/open-source/jenkins/job/xtext-eclipse/job/master/lastSuccessfulBuild/artifact/build/p2-repository/"/>
+<repository location="http://services.typefox.io/open-source/jenkins/job/xtext-eclipse/job/milestone_2.11.0.beta1/lastSuccessfulBuild/artifact/build/p2-repository/"/>
 </location>
 
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.xtend.sdk.feature.group" version="0.0.0"/>
-<repository location="http://services.typefox.io/open-source/jenkins/job/xtext-xtend/job/master/lastSuccessfulBuild/artifact/build/p2-repository/"/>
+<repository location="http://services.typefox.io/open-source/jenkins/job/xtext-xtend/job/milestone_2.11.0.beta1/lastSuccessfulBuild/artifact/build/p2-repository/"/>
 </location>
 
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
