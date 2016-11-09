@@ -1,0 +1,8 @@
+(files { file('../../').listFiles() })
+.filter { 
+    File it ->
+    it.isDirectory() && it.getName().startsWith("xtext-") && new File(it, "settings.gradle").exists()
+}.each {
+    File it -> 
+    includeBuild it
+}
