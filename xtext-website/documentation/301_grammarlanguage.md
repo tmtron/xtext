@@ -23,7 +23,7 @@ grammar org.example.domainmodel.Domainmodel
         with org.eclipse.xtext.common.Terminals
 ```
 
-The first line declares the name of the language. Xtext leverages Java's class path mechanism. This means that the name can be any valid Java qualifier. The file name needs to correspond to the language name and have the file extension `.xtext`. This means that the name has to be *SecretCompartments.xtext* and must be placed in a package *org.xtext.example* on your project's class path. In other words, your `.xtext` file has to reside in a Java source folder to be valid.
+The first line declares the name of the language. Xtext leverages Java's class path mechanism. This means that the name can be any valid Java qualifier. The file name needs to correspond to the language name and have the file extension `.xtext`. This means that the name has to be *Domainmodel.xtext* and must be placed in a package *org.xtext.example* on your project's class path. In other words, your `.xtext` file has to reside in a Java source folder to be valid.
 
 The second aspect that can be deduced from the first line of the grammar is its relationship to other languages. An Xtext grammar can declare another existing grammar to be reused. The mechanism is called [grammar mixin](301_grammarlanguage.html#grammar-mixins)).
 
@@ -258,7 +258,7 @@ DataType:
     'datatype' name = ID;
 ```
 
-The syntactic declaration for datatypes starts with a keyword `datatype` followed by an assignment: `name = ID`. The left hand side refers to a feature *name* of the current object (which has the EClass *State* in this case). The right hand side can be a rule call, a keyword, a [cross-reference](301_grammarlanguage.html#cross-references) or an alternative comprised by the former options. The type of the feature needs to be compatible with the type of the expression on the right. As *ID* returns an [EString]({{site.javadoc.java}}/java/lang/String.html) in this case, the feature *name* needs to be of type EString as well.
+The syntactic declaration for datatypes starts with a keyword `datatype` followed by an assignment: `name = ID`. The left hand side refers to a feature *name* of the current object (which has the EClass *DataType* in this case). The right hand side can be a rule call, a keyword, a [cross-reference](301_grammarlanguage.html#cross-references) or an alternative comprised by the former options. The type of the feature needs to be compatible with the type of the expression on the right. As *ID* returns an [EString]({{site.javadoc.java}}/java/lang/String.html) in this case, the feature *name* needs to be of type EString as well.
 
 There are three different assignment operators, each with different semantics.
 
